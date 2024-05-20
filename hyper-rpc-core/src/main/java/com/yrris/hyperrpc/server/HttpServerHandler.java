@@ -1,10 +1,12 @@
 package com.yrris.hyperrpc.server;
 
+import com.yrris.hyperrpc.RpcApplication;
 import com.yrris.hyperrpc.model.RpcRequest;
 import com.yrris.hyperrpc.model.RpcResponse;
 import com.yrris.hyperrpc.registry.LocalRegistry;
 import com.yrris.hyperrpc.serializer.JdkSerializer;
 import com.yrris.hyperrpc.serializer.Serializer;
+import com.yrris.hyperrpc.serializer.SerializerFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -27,8 +29,8 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
 
     @Override
     public void handle(HttpServerRequest request) {
-        // 指定序列化器
-        final Serializer serializer = new JdkSerializer();
+        // 通过序列化器工厂返回需要的序列化器,传入配置文件中指定的序列化器
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         // 记录日志
         System.out.println("Received request: " + request.method() + " " + request.uri());

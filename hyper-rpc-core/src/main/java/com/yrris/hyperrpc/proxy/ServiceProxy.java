@@ -8,6 +8,7 @@ import com.yrris.hyperrpc.model.RpcRequest;
 import com.yrris.hyperrpc.model.RpcResponse;
 import com.yrris.hyperrpc.serializer.JdkSerializer;
 import com.yrris.hyperrpc.serializer.Serializer;
+import com.yrris.hyperrpc.serializer.SerializerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -17,7 +18,6 @@ import java.lang.reflect.Method;
  * JDK动态代理 实现服务代理
  */
 public class ServiceProxy implements InvocationHandler {
-    private RpcConfig rpcConfig = RpcApplication.getRpcConfig();
     /**
      * 调用代理
      *
@@ -26,8 +26,8 @@ public class ServiceProxy implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        // 指定序列化器
-        Serializer serializer = new JdkSerializer();
+        // 通过序列化器工厂返回需要的序列化器,传入配置文件中指定的序列化器
+        Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         // 构造请求
         RpcRequest rpcRequest = RpcRequest.builder()
@@ -41,7 +41,7 @@ public class ServiceProxy implements InvocationHandler {
             byte[] bodyBytes = serializer.serialize(rpcRequest);
             // 发送请求
             // todo 暂时硬编码了地址（需要注册中心和服务发现来解决）
-            try (HttpResponse httpResponse = HttpRequest.post("http://"+rpcConfig.getServerHost()+":"+rpcConfig.getServerPort())
+            try (HttpResponse httpResponse = HttpRequest.post("http://"+RpcApplication.getRpcConfig().getServerHost()+":"+RpcApplication.getRpcConfig().getServerPort())
                     .body(bodyBytes)
                     .execute()) {
                 byte[] result = httpResponse.bodyBytes();
