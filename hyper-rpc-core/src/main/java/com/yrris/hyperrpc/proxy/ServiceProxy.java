@@ -2,6 +2,8 @@ package com.yrris.hyperrpc.proxy;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.yrris.hyperrpc.RpcApplication;
+import com.yrris.hyperrpc.config.RpcConfig;
 import com.yrris.hyperrpc.model.RpcRequest;
 import com.yrris.hyperrpc.model.RpcResponse;
 import com.yrris.hyperrpc.serializer.JdkSerializer;
@@ -15,6 +17,7 @@ import java.lang.reflect.Method;
  * JDK动态代理 实现服务代理
  */
 public class ServiceProxy implements InvocationHandler {
+    private RpcConfig rpcConfig = RpcApplication.getRpcConfig();
     /**
      * 调用代理
      *
@@ -38,7 +41,7 @@ public class ServiceProxy implements InvocationHandler {
             byte[] bodyBytes = serializer.serialize(rpcRequest);
             // 发送请求
             // todo 暂时硬编码了地址（需要注册中心和服务发现来解决）
-            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8080")
+            try (HttpResponse httpResponse = HttpRequest.post("http://"+rpcConfig.getServerHost()+":"+rpcConfig.getServerPort())
                     .body(bodyBytes)
                     .execute()) {
                 byte[] result = httpResponse.bodyBytes();
